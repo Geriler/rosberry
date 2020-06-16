@@ -1,0 +1,15 @@
+{
+    "require": {
+        "symfony/dotenv": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "scripts": {
+        "post-update-cmd": [
+            "@composer dump-autoload"
+        ]
+    }
+}
