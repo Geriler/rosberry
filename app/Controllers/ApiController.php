@@ -18,9 +18,32 @@ class ApiController
         return hash('sha512', $data);
     }
 
-    public function login()
+    public function login(Request $request)
     {
-        return 'login';
+        $email = $request->get('email');
+        $password = $request->get('password');
+        $errors = [];
+        if (empty($email)) $errors[] = 'Email is required';
+        if (empty($password)) $errors[] = 'Password is required';
+        if (count($errors)) {
+            http_response_code(400);
+            return ['errors' => $errors];
+        }
+        $user = $this->userModel->get('email', $email)[0];
+        if (empty($user)) {
+            http_response_code(400);
+            return ['errors' => ['This user not found']];
+        }
+        if (!password_verify($password, $user->password)) {
+            http_response_code(400);
+            return ['errors' => ['Incorrect password']];
+        }
+        $token = $this->generateToken("$email:$password");
+        $this->userModel->update($user->id, [
+            'token' => $token,
+        ]);
+        http_response_code(200);
+        return ['token' => $token];
     }
 
     public function register(Request $request)
