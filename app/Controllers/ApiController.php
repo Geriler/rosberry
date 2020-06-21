@@ -98,6 +98,10 @@ class ApiController
             http_response_code(400);
             return ['errors' => ['Invalid token']];
         }
+        if (!empty($age = $request->get('age')) && $age < 0) {
+            http_response_code(400);
+            return ['errors' => ['Invalid age']];
+        }
         if (empty($request->get('password'))) {
             $password = $user->password;
         } else {
@@ -107,7 +111,7 @@ class ApiController
             'email' => $request->get('email') ?? $user->email,
             'password' => $password,
             'name' => $request->get('name') ?? $user->name,
-            'age' => $request->get('age') ?? $user->age,
+            'age' => $age ?? $user->age,
             'avatar' => $request->get('avatar') ?? $user->avatar,
             'interests' => json_encode($request->get('interests')) ?? $user->interests,
             'lat' => $request->get('lat') ?? $user->lat,
