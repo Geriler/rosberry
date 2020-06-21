@@ -43,6 +43,7 @@ class ApiController
             'token' => $token,
             'lat' => $request->get('lat') ?? '',
             'lon' => $request->get('lon') ?? '',
+            'country' => $request->get('country') ?? '',
         ]);
         http_response_code(200);
         return ['token' => $token];
@@ -66,6 +67,7 @@ class ApiController
             'password' => $password,
             'lat' => $request->get('lat') ?? '',
             'lon' => $request->get('lon') ?? '',
+            'country' => $request->get('country') ?? '',
         ]);
         if ($result) {
             http_response_code(500);
@@ -77,6 +79,7 @@ class ApiController
                 'token' => $token,
                 'lat' => $request->get('lat') ?? '',
                 'lon' => $request->get('lon') ?? '',
+                'country' => $request->get('country') ?? '',
             ]);
         }
         http_response_code(201);

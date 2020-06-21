@@ -15,5 +15,6 @@ class User extends BaseModel
         'interests',
         'lat',
         'lon',
+        'country',
     ];
 }
