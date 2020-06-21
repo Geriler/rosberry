@@ -1,6 +1,7 @@
 <?php namespace App\Controllers;
 
 use App\Core\Request;
+use App\Models\Setting;
 use App\Models\Token;
 use App\Models\User;
 
@@ -8,11 +9,13 @@ class ApiController
 {
     private $userModel;
     private $tokenModel;
+    private $settingModel;
 
     public function __construct()
     {
         $this->userModel = new User();
         $this->tokenModel = new Token();
+        $this->settingModel = new Setting();
         header('Content-type: application/json');
     }
 
@@ -85,6 +88,13 @@ class ApiController
                 'user_id' => $user->id,
                 'token' => $token,
             ]);
+            $this->settingModel->insert([
+                'user_id' => $user->id,
+                'show_age' => json_encode([0, 'max']),
+                'show_self_age' => json_encode([0, 'max']),
+                'show_interests' => json_encode([2, 2, 2]),
+                'show_neighbors' => 0
+            ]);
             $this->userModel->update($user->id, [
                 'lat' => $request->get('lat') ?? $user->lat,
                 'lon' => $request->get('lon') ?? $user->lon,
@@ -103,11 +113,11 @@ class ApiController
             return ['errors' => ['Token is required']];
         }
         $token = $this->tokenModel->get('token', $token)[0];
-        $user = $this->userModel->get('id', $token->user_id)[0];
-        if (empty($user)) {
+        if (empty($token)) {
             http_response_code(400);
             return ['errors' => ['Invalid token']];
         }
+        $user = $this->userModel->get('id', $token->user_id)[0];
         if (!empty($age = $request->get('age')) && $age < 0) {
             http_response_code(400);
             return ['errors' => ['Invalid age']];
@@ -127,6 +137,35 @@ class ApiController
             'lat' => $request->get('lat') ?? $user->lat,
             'lon' => $request->get('lon') ?? $user->lon,
             'country' => $request->get('country') ?? $user->country,
+        ]);
+        http_response_code(200);
+        return ['result' => 'ok'];
+    }
+
+    public function settingsEdit(Request $request)
+    {
+        $token = $request->get('token');
+        if (empty($token)) {
+            http_response_code(401);
+            return ['errors' => ['Token is required']];
+        }
+        $token = $this->tokenModel->get('token', $token)[0];
+        if (empty($token)) {
+            http_response_code(400);
+            return ['errors' => ['Invalid token']];
+        }
+        $settings = $this->settingModel->get('user_id', $token->user_id)[0];
+        $user = $this->userModel->get('id', $token->user_id)[0];
+        $this->userModel->update($user->id, [
+            'lat' => $request->get('lat') ?? $user->lat,
+            'lon' => $request->get('lon') ?? $user->lon,
+            'country' => $request->get('country') ?? $user->country,
+        ]);
+        $this->settingModel->update($settings->id, [
+            'show_age' => !empty($show_age = $request->get('show_age')) ? json_encode($show_age) : $settings->show_age,
+            'show_self_age' => !empty($show_self_age = $request->get('show_self_age')) ? json_encode($show_self_age) : $settings->show_self_age,
+            'show_interests' => !empty($show_interests = $request->get('show_interests')) ? json_encode($show_interests) : $settings->show_interests,
+            'show_neighbors' => $request->get('show_neighbors') ?? $settings->show_neighbors,
         ]);
         http_response_code(200);
         return ['result' => 'ok'];
