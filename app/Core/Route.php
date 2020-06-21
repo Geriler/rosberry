@@ -38,6 +38,7 @@ class Route
             }
         } else {
             http_response_code(400);
+            header('Content-type: application/json');
             echo json_encode([
                 'errors' => ['This route doesn\'t support ' . $_SERVER['REQUEST_METHOD'] .
                     '. Use ' . implode('/', $route['method'])]]);
