@@ -98,9 +98,14 @@ class ApiController
             http_response_code(400);
             return ['errors' => ['Invalid token']];
         }
+        if (empty($request->get('password'))) {
+            $password = $user->password;
+        } else {
+            $password = password_hash($request->get('password'), PASSWORD_BCRYPT);
+        }
         $this->userModel->update($user->id, [
             'email' => $request->get('email') ?? $user->email,
-            'password' => $request->get('password') ?? $user->password,
+            'password' => $password,
             'name' => $request->get('name') ?? $user->name,
             'age' => $request->get('age') ?? $user->age,
             'avatar' => $request->get('avatar') ?? $user->avatar,
