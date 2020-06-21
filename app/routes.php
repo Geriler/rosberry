@@ -3,5 +3,5 @@
 use App\Controllers\ApiController;
 use App\Core\Route;
 
-Route::add('/api/login', ApiController::class, 'login');
-Route::add('/api/register', ApiController::class, 'register');
+Route::post('/api/login', ApiController::class, 'login');
+Route::post('/api/register', ApiController::class, 'register');

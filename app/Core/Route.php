@@ -1,7 +1,5 @@
 <?php namespace App\Core;
 
-use App\Controllers\ApiController;
-
 class Route
 {
     private static $routes = [];
@@ -32,19 +30,33 @@ class Route
             die;
         }
 
-        $controller = new $controller;
-        if (method_exists($controller, $action)) {
-            $response = $controller->$action($request);
-            echo json_encode($response);
+        if (in_array($_SERVER['REQUEST_METHOD'], $route['method'])) {
+            $controller = new $controller;
+            if (method_exists($controller, $action)) {
+                $response = $controller->$action($request);
+                echo json_encode($response);
+            }
+        } else {
+            http_response_code(400);
+            echo json_encode([
+                'errors' => ['This route doesn\'t support ' . $_SERVER['REQUEST_METHOD'] .
+                    '. Use ' . implode('/', $route['method'])]]);
+            die;
         }
     }
 
-    static function add(string $route, string $class, string $action)
+    static private function add(string $route, string $class, string $action, array $methods)
     {
         $params = [
             'class' => $class,
             'action' => $action,
+            'method' => $methods,
         ];
         self::$routes["~^\\{$route}$~"] = $params;
+    }
+
+    static function post(string $route, string $class, string $action)
+    {
+        self::add($route, $class, $action, ['POST']);
     }
 }
