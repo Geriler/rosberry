@@ -1,15 +1,18 @@
 <?php namespace App\Controllers;
 
 use App\Core\Request;
+use App\Models\Token;
 use App\Models\User;
 
 class ApiController
 {
     private $userModel;
+    private $tokenModel;
 
     public function __construct()
     {
         $this->userModel = new User();
+        $this->tokenModel = new Token();
         header('Content-type: application/json');
     }
 
@@ -38,9 +41,12 @@ class ApiController
             http_response_code(400);
             return ['errors' => ['Incorrect password']];
         }
+        $token_id = $this->tokenModel->get('user_id', $user->id)[0]->id;
         $token = $this->generateToken();
-        $this->userModel->update($user->id, [
+        $this->tokenModel->update($token_id, [
             'token' => $token,
+        ]);
+        $this->userModel->update($user->id, [
             'lat' => $request->get('lat') ?? $user->lat ?? 0,
             'lon' => $request->get('lon') ?? $user->lon ?? 0,
             'country' => $request->get('country') ?? $user->country ?? '',
@@ -75,8 +81,11 @@ class ApiController
         } else {
             $token = $this->generateToken();
             $user = $this->userModel->get('email', $email)[0];
-            $this->userModel->update($user->id, [
+            $this->tokenModel->insert([
+                'user_id' => $user->id,
                 'token' => $token,
+            ]);
+            $this->userModel->update($user->id, [
                 'lat' => $request->get('lat') ?? $user->lat,
                 'lon' => $request->get('lon') ?? $user->lon,
                 'country' => $request->get('country') ?? $user->country,
@@ -93,7 +102,8 @@ class ApiController
             http_response_code(401);
             return ['errors' => ['Token is required']];
         }
-        $user = $this->userModel->get('token', $token)[0];
+        $token = $this->tokenModel->get('token', $token)[0];
+        $user = $this->userModel->get('id', $token->user_id)[0];
         if (empty($user)) {
             http_response_code(400);
             return ['errors' => ['Invalid token']];
