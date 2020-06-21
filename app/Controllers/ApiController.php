@@ -13,9 +13,9 @@ class ApiController
         header('Content-type: application/json');
     }
 
-    private function generateToken(string $data)
+    private function generateToken()
     {
-        return hash('sha512', $data);
+        return bin2hex(random_bytes(64));
     }
 
     public function login(Request $request)
@@ -38,12 +38,12 @@ class ApiController
             http_response_code(400);
             return ['errors' => ['Incorrect password']];
         }
-        $token = $this->generateToken("$email:$password");
+        $token = $this->generateToken();
         $this->userModel->update($user->id, [
             'token' => $token,
-            'lat' => $request->get('lat') ?? '',
-            'lon' => $request->get('lon') ?? '',
-            'country' => $request->get('country') ?? '',
+            'lat' => $request->get('lat') ?? $user->lat ?? 0,
+            'lon' => $request->get('lon') ?? $user->lon ?? 0,
+            'country' => $request->get('country') ?? $user->country ?? '',
         ]);
         http_response_code(200);
         return ['token' => $token];
@@ -65,21 +65,21 @@ class ApiController
         $result = $this->userModel->insert([
             'email' => $email,
             'password' => $password,
-            'lat' => $request->get('lat') ?? '',
-            'lon' => $request->get('lon') ?? '',
+            'lat' => $request->get('lat') ?? 0,
+            'lon' => $request->get('lon') ?? 0,
             'country' => $request->get('country') ?? '',
         ]);
         if ($result) {
             http_response_code(500);
             return ['errors' => ['Some error occurred']];
         } else {
-            $token = $this->generateToken("$email:$password");
+            $token = $this->generateToken();
             $user = $this->userModel->get('email', $email)[0];
             $this->userModel->update($user->id, [
                 'token' => $token,
-                'lat' => $request->get('lat') ?? '',
-                'lon' => $request->get('lon') ?? '',
-                'country' => $request->get('country') ?? '',
+                'lat' => $request->get('lat') ?? $user->lat,
+                'lon' => $request->get('lon') ?? $user->lon,
+                'country' => $request->get('country') ?? $user->country,
             ]);
         }
         http_response_code(201);

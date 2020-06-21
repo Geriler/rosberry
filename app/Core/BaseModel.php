@@ -1,7 +1,5 @@
 <?php namespace App\Core;
 
-use App\Core\Database;
-
 abstract class BaseModel
 {
     public $id = 'id';
@@ -56,7 +54,6 @@ abstract class BaseModel
     public function update(int $id, array $data)
     {
         $database = Database::getInstant();
-        $oldData = $this->get($this->id, $id)[0];
         $newData = [];
         foreach ($data as $field => $value) {
             $newData[$field] = '\'' . $value . '\'';
