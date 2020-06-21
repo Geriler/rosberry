@@ -41,6 +41,8 @@ class ApiController
         $token = $this->generateToken("$email:$password");
         $this->userModel->update($user->id, [
             'token' => $token,
+            'lat' => $request->get('lat') ?? '',
+            'lon' => $request->get('lon') ?? '',
         ]);
         http_response_code(200);
         return ['token' => $token];
@@ -62,6 +64,8 @@ class ApiController
         $result = $this->userModel->insert([
             'email' => $email,
             'password' => $password,
+            'lat' => $request->get('lat') ?? '',
+            'lon' => $request->get('lon') ?? '',
         ]);
         if ($result) {
             http_response_code(500);
@@ -71,6 +75,8 @@ class ApiController
             $user = $this->userModel->get('email', $email)[0];
             $this->userModel->update($user->id, [
                 'token' => $token,
+                'lat' => $request->get('lat') ?? '',
+                'lon' => $request->get('lon') ?? '',
             ]);
         }
         http_response_code(201);
