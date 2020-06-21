@@ -27,7 +27,8 @@ class Route
             unset($matches[0]);
         } else {
             header('Content-type: application/json');
-            echo 'Method not found';
+            http_response_code(400);
+            echo json_encode(['errors' => ['Method not found']]);
             die;
         }
 

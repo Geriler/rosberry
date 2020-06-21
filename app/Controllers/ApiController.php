@@ -30,15 +30,19 @@ class ApiController
         $errors = [];
         if (empty($email)) $errors[] = 'Email is required';
         if (empty($password)) $errors[] = 'Password is required';
-        if (!empty($email) && $this->userModel->get('email', $email)) $errors[] = 'Email must be unique';
-        if (count($errors)) return ['result' => 'error', 'errors' => $errors, 'status' => 400];
+        if (empty($errors) && !empty($email) && $this->userModel->get('email', $email)) $errors[] = 'Email must be unique';
+        if (count($errors)) {
+            http_response_code(400);
+            return ['errors' => $errors];
+        }
         $password = password_hash($password, PASSWORD_BCRYPT);
         $result = $this->userModel->insert([
             'email' => $email,
             'password' => $password,
         ]);
         if ($result) {
-            return ['result' => 'error', 'errors' => ['Some error occurred'], 'status' => 500];
+            http_response_code(500);
+            return ['errors' => ['Some error occurred']];
         } else {
             $token = $this->generateToken("$email:$password");
             $user = $this->userModel->get('email', $email)[0];
@@ -46,6 +50,7 @@ class ApiController
                 'token' => $token,
             ]);
         }
-        return ['result' => 'ok', 'token' => $token, 'status' => 200];
+        http_response_code(201);
+        return ['token' => $token];
     }
 }
