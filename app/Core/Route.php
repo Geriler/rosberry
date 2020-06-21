@@ -60,4 +60,9 @@ class Route
     {
         self::add($route, $class, $action, ['POST']);
     }
+
+    static function patch(string $route, string $class, string $action)
+    {
+        self::add($route, $class, $action, ['PATCH']);
+    }
 }

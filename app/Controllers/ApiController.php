@@ -85,4 +85,31 @@ class ApiController
         http_response_code(201);
         return ['token' => $token];
     }
+
+    public function profileEdit(Request $request)
+    {
+        $token = $request->get('token');
+        if (empty($token)) {
+            http_response_code(401);
+            return ['errors' => ['Token is required']];
+        }
+        $user = $this->userModel->get('token', $token)[0];
+        if (empty($user)) {
+            http_response_code(400);
+            return ['errors' => ['Invalid token']];
+        }
+        $this->userModel->update($user->id, [
+            'email' => $request->get('email') ?? $user->email,
+            'password' => $request->get('password') ?? $user->password,
+            'name' => $request->get('name') ?? $user->name,
+            'age' => $request->get('age') ?? $user->age,
+            'avatar' => $request->get('avatar') ?? $user->avatar,
+            'interests' => json_encode($request->get('interests')) ?? $user->interests,
+            'lat' => $request->get('lat') ?? $user->lat,
+            'lon' => $request->get('lon') ?? $user->lon,
+            'country' => $request->get('country') ?? $user->country,
+        ]);
+        http_response_code(200);
+        return ['result' => 'ok'];
+    }
 }
