@@ -78,6 +78,12 @@ class ApiController
         $this->tokenModel->update($token->id, [
             'token' => '',
         ]);
+        $user = $this->userModel->get('id', $token->user_id)[0];
+        $this->userModel->update($user->id, [
+            'lat' => $request->get('lat') ?? $user->lat,
+            'lon' => $request->get('lon') ?? $user->lon,
+            'country' => $request->get('country') ?? $user->country,
+        ]);
         return ['result' => 'ok'];
     }
 
@@ -154,6 +160,24 @@ class ApiController
         ]);
         http_response_code(200);
         return ['result' => 'ok'];
+    }
+
+    public function profileGet(Request $request)
+    {
+        $token = $this->authentication($request->get('token'));
+        $user = $this->userModel->get('id', $token->user_id)[0];
+        $this->userModel->update($user->id, [
+            'lat' => $request->get('lat') ?? $user->lat,
+            'lon' => $request->get('lon') ?? $user->lon,
+            'country' => $request->get('country') ?? $user->country,
+        ]);
+        return [
+            'email' => $user->email,
+            'name' => $user->name,
+            'avatar' => $user->avatar,
+            'age' => $user->age,
+            'interests' => json_decode($user->interests),
+        ];
     }
 
     public function settingsEdit(Request $request)

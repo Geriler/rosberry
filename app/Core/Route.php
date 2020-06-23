@@ -65,4 +65,9 @@ class Route
     {
         self::add($route, $class, $action, ['PATCH']);
     }
+
+    static function get(string $route, string $class, string $action)
+    {
+        self::add($route, $class, $action, ['GET']);
+    }
 }
