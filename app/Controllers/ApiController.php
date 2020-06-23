@@ -63,11 +63,7 @@ class ApiController
         $this->tokenModel->update($token_id, [
             'token' => $token,
         ]);
-        $this->userModel->update($user->id, [
-            'lat' => $request->get('lat') ?? $user->lat ?? 0,
-            'lon' => $request->get('lon') ?? $user->lon ?? 0,
-            'country' => $request->get('country') ?? $user->country ?? '',
-        ]);
+        $this->updateUserCoords($user, $request);
         http_response_code(200);
         return ['token' => $token];
     }
@@ -79,11 +75,7 @@ class ApiController
             'token' => '',
         ]);
         $user = $this->userModel->get('id', $token->user_id)[0];
-        $this->userModel->update($user->id, [
-            'lat' => $request->get('lat') ?? $user->lat,
-            'lon' => $request->get('lon') ?? $user->lon,
-            'country' => $request->get('country') ?? $user->country,
-        ]);
+        $this->updateUserCoords($user, $request);
         return ['result' => 'ok'];
     }
 
@@ -124,11 +116,7 @@ class ApiController
                 'show_interests' => json_encode([2, 2, 2]),
                 'show_neighbors' => 0
             ]);
-            $this->userModel->update($user->id, [
-                'lat' => $request->get('lat') ?? $user->lat,
-                'lon' => $request->get('lon') ?? $user->lon,
-                'country' => $request->get('country') ?? $user->country,
-            ]);
+            $this->updateUserCoords($user, $request);
         }
         http_response_code(201);
         return ['token' => $token];
@@ -154,10 +142,8 @@ class ApiController
             'age' => $age ?? $user->age,
             'avatar' => $request->get('avatar') ?? $user->avatar,
             'interests' => json_encode($request->get('interests')) ?? $user->interests,
-            'lat' => $request->get('lat') ?? $user->lat,
-            'lon' => $request->get('lon') ?? $user->lon,
-            'country' => $request->get('country') ?? $user->country,
         ]);
+        $this->updateUserCoords($user, $request);
         http_response_code(200);
         return ['result' => 'ok'];
     }
@@ -166,11 +152,7 @@ class ApiController
     {
         $token = $this->authentication($request->get('token'));
         $user = $this->userModel->get('id', $token->user_id)[0];
-        $this->userModel->update($user->id, [
-            'lat' => $request->get('lat') ?? $user->lat,
-            'lon' => $request->get('lon') ?? $user->lon,
-            'country' => $request->get('country') ?? $user->country,
-        ]);
+        $this->updateUserCoords($user, $request);
         return [
             'email' => $user->email,
             'name' => $user->name,
@@ -185,11 +167,7 @@ class ApiController
         $token = $this->authentication($request->get('token'));
         $settings = $this->settingModel->get('user_id', $token->user_id)[0];
         $user = $this->userModel->get('id', $token->user_id)[0];
-        $this->userModel->update($user->id, [
-            'lat' => $request->get('lat') ?? $user->lat,
-            'lon' => $request->get('lon') ?? $user->lon,
-            'country' => $request->get('country') ?? $user->country,
-        ]);
+        $this->updateUserCoords($user, $request);
         $this->settingModel->update($settings->id, [
             'show_age' => !empty($show_age = $request->get('show_age')) ? json_encode($show_age) : $settings->show_age,
             'show_self_age' => !empty($show_self_age = $request->get('show_self_age')) ? json_encode($show_self_age) : $settings->show_self_age,
@@ -205,16 +183,21 @@ class ApiController
         $token = $this->authentication($request->get('token'));
         $user = $this->userModel->get('id', $token->user_id)[0];
         $settings = $this->settingModel->get('user_id', $token->user_id)[0];
-        $this->userModel->update($user->id, [
-            'lat' => $request->get('lat') ?? $user->lat,
-            'lon' => $request->get('lon') ?? $user->lon,
-            'country' => $request->get('country') ?? $user->country,
-        ]);
+        $this->updateUserCoords($user, $request);
         return [
             'show_age' => json_decode($settings->show_age),
             'show_self_age' => json_decode($settings->show_self_age),
             'show_interests' => json_decode($settings->show_interests),
             'show_neighbors' => $settings->show_neighbors,
         ];
+    }
+
+    private function updateUserCoords($user, $request)
+    {
+        $this->userModel->update($user->id, [
+            'lat' => $request->get('lat') ?? $user->lat ?? 0,
+            'lon' => $request->get('lon') ?? $user->lon ?? 0,
+            'country' => $request->get('country') ?? $user->country ?? '',
+        ]);
     }
 }
