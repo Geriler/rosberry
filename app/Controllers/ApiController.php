@@ -199,4 +199,22 @@ class ApiController
         http_response_code(200);
         return ['result' => 'ok'];
     }
+
+    public function settingsGet(Request $request)
+    {
+        $token = $this->authentication($request->get('token'));
+        $user = $this->userModel->get('id', $token->user_id)[0];
+        $settings = $this->settingModel->get('user_id', $token->user_id)[0];
+        $this->userModel->update($user->id, [
+            'lat' => $request->get('lat') ?? $user->lat,
+            'lon' => $request->get('lon') ?? $user->lon,
+            'country' => $request->get('country') ?? $user->country,
+        ]);
+        return [
+            'show_age' => json_decode($settings->show_age),
+            'show_self_age' => json_decode($settings->show_self_age),
+            'show_interests' => json_decode($settings->show_interests),
+            'show_neighbors' => $settings->show_neighbors,
+        ];
+    }
 }
