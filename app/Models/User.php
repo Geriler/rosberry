@@ -8,7 +8,6 @@ class User extends BaseModel
     protected $fields = [
         'email',
         'password',
-        'token',
         'name',
         'avatar',
         'age',

@@ -24,6 +24,20 @@ class ApiController
         return bin2hex(random_bytes(64));
     }
 
+    private function authentication($token)
+    {
+        if (empty($token)) {
+            http_response_code(401);
+            return ['errors' => ['Token is required']];
+        }
+        $token = $this->tokenModel->get('token', $token)[0];
+        if (empty($token)) {
+            http_response_code(400);
+            return ['errors' => ['Invalid token']];
+        }
+        return $token;
+    }
+
     public function login(Request $request)
     {
         $email = $request->get('email');
@@ -56,6 +70,15 @@ class ApiController
         ]);
         http_response_code(200);
         return ['token' => $token];
+    }
+
+    public function logout(Request $request)
+    {
+        $token = $this->authentication($request->get('token'));
+        $this->tokenModel->update($token->id, [
+            'token' => '',
+        ]);
+        return ['result' => 'ok'];
     }
 
     public function register(Request $request)
@@ -107,16 +130,7 @@ class ApiController
 
     public function profileEdit(Request $request)
     {
-        $token = $request->get('token');
-        if (empty($token)) {
-            http_response_code(401);
-            return ['errors' => ['Token is required']];
-        }
-        $token = $this->tokenModel->get('token', $token)[0];
-        if (empty($token)) {
-            http_response_code(400);
-            return ['errors' => ['Invalid token']];
-        }
+        $token = $this->authentication($request->get('token'));
         $user = $this->userModel->get('id', $token->user_id)[0];
         if (!empty($age = $request->get('age')) && $age < 0) {
             http_response_code(400);
@@ -144,16 +158,7 @@ class ApiController
 
     public function settingsEdit(Request $request)
     {
-        $token = $request->get('token');
-        if (empty($token)) {
-            http_response_code(401);
-            return ['errors' => ['Token is required']];
-        }
-        $token = $this->tokenModel->get('token', $token)[0];
-        if (empty($token)) {
-            http_response_code(400);
-            return ['errors' => ['Invalid token']];
-        }
+        $token = $this->authentication($request->get('token'));
         $settings = $this->settingModel->get('user_id', $token->user_id)[0];
         $user = $this->userModel->get('id', $token->user_id)[0];
         $this->userModel->update($user->id, [
